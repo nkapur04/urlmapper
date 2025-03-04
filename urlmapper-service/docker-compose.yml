@@ -1,0 +1,22 @@
+services:
+  mysql:
+    image: mysql:latest
+    container_name: mysql-latest-container
+    environment:
+      MYSQL_ROOT_PASSWORD: MySqlPassword23
+    ports:
+      - "3306:3306"
+    networks:
+      - my-network
+
+  spring-boot-app:
+    image: mapper
+    container_name: mapper
+    depends_on:
+      - mysql
+    networks:
+      - my-network
+
+networks:
+  my-network:
+    driver: bridge
