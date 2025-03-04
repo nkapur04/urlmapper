@@ -28,8 +28,8 @@ Mapper Service is a Spring Boot application that provides various endpoints for 
 
 1. Clone the repository:
     ```sh
-    git clone https://github.com/yourusername/mapper-utility.git
-    cd mapper-utility
+    git clone [https://github.com/yourusername/urlmapper.git]
+    cd mapper-service
     ```
 
 2. Build the project using Maven:
