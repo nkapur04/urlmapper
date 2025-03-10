@@ -1,15 +1,12 @@
 package com.sample.url.utility.mapper.controller;
 
+import com.sample.url.utility.mapper.config.AppProperty;
 import com.sample.url.utility.mapper.dto.ResponseDTO;
 import com.sample.url.utility.mapper.service.URLMapperService;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -22,12 +19,17 @@ public class URLMapperController {
 
     private final URLMapperService urlMapperService;
 
-/*    @Value("${some.config.value}")
-    private String someValue;*/
+    private final AppProperty appProperty;
+
+/*    @Value("${example.username}")
+    private String username;*/
+
+/*    @Value("${vault.name}")
+    private String dbPassword;*/
 
     @GetMapping(value = "/checkStatus")
     public ResponseEntity<Object> checkStatus() {
-        return new ResponseEntity<>("UP", HttpStatus.OK);
+        return new ResponseEntity<>("UP: "+appProperty.getUsername(), HttpStatus.OK);
     }
 
     @PostMapping("/shorten")
