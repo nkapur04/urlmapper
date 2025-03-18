@@ -21,36 +21,36 @@ public class URLMapperController {
 
     private final AppProperty appProperty;
 
-/*    @Value("${example.username}")
-    private String username;*/
-
-/*    @Value("${vault.name}")
-    private String dbPassword;*/
-
     @GetMapping(value = "/checkStatus")
     public ResponseEntity<Object> checkStatus() {
-        return new ResponseEntity<>("UP: "+appProperty.getUsername(), HttpStatus.OK);
+        return new ResponseEntity<>("UP: " + appProperty.getUsername(), HttpStatus.OK);
     }
 
     @PostMapping("/shorten")
     public ResponseEntity<ResponseDTO> shortenURL(@RequestBody String url) {
-        log.debug("shortUrl Start time: "+LocalDateTime.now());
+        log.debug("shortUrl Start time: " + LocalDateTime.now());
         ResponseDTO responseDTO = urlMapperService.shortenURL(url);
-        log.debug("shortUrl end time: "+LocalDateTime.now());
+        log.debug("shortUrl end time: " + LocalDateTime.now());
         return new ResponseEntity<>(responseDTO, HttpStatus.OK);
     }
 
     @GetMapping("/{shortUrl}")
     public ResponseEntity<Object> redirectToLongUrl(@PathVariable String shortUrl) {
         ResponseEntity<Object> responseEntity;
-        log.debug("redirect Start time: "+LocalDateTime.now());
+        log.debug("redirect Start time: " + LocalDateTime.now());
         String longUrl = urlMapperService.getLongUrl(shortUrl);
-        responseEntity= (longUrl.isEmpty()? ResponseEntity.status(HttpStatus.NOT_FOUND) // could use 301 or 302
-                .build():
+        responseEntity = (longUrl.isEmpty() ? ResponseEntity.status(HttpStatus.NOT_FOUND) // could use 301 or 302
+                .build() :
                 ResponseEntity.status(HttpStatus.FOUND) // could use 301 or 302
-                .location(URI.create(longUrl)) // Set the location header to the long URL
-                .build());
-        log.debug("redirect end time: "+LocalDateTime.now());
+                        .location(URI.create(longUrl)) // Set the location header to the long URL
+                        .build());
+        log.debug("redirect end time: " + LocalDateTime.now());
         return responseEntity;
+    }
+
+    @GetMapping("/evictCache")
+    public ResponseEntity<Object> evictCache() {
+        urlMapperService.evictCache();
+        return new ResponseEntity<>("Cache evicted", HttpStatus.OK);
     }
 }

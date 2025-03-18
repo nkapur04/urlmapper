@@ -13,6 +13,7 @@ import com.sample.url.utility.mapper.util.MapperUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.stereotype.Service;
 
@@ -29,7 +30,7 @@ public class URLMapperService {
 
 
     private final URLMapperRepo urlMapperRepo;
-    //private final ApplicationProperties applicationProperties;
+
     private final URLValidator urlValidator;
 
     public ResponseDTO shortenURL(String url) {
@@ -69,7 +70,7 @@ public class URLMapperService {
 
                 case MapperConstants.UPDATE_MODE:
                     log.debug("update in db");
-                    updateInDB(url,shortUrl);
+                    updateInDB(url, shortUrl);
                     responseDTO.setUrl(shortUrl);
                     break;
 
@@ -77,15 +78,14 @@ public class URLMapperService {
                     log.warn("Unknown action mode: " + action);
                     break;
             }
-        }
-        else {
+        } else {
             throw new InvalidURLException(ErrorCodeEnum.SHORTURLMAL.name());
         }
         return responseDTO;
     }
 
     private void updateInDB(String url, String shortUrl) {
-        urlMapperRepo.updateEffectiveDate(url,shortUrl, LocalDate.of(9999, 12, 31));
+        urlMapperRepo.updateEffectiveDate(url, shortUrl, LocalDate.of(9999, 12, 31));
     }
 
     private String checkIfKeyExists(String shortUrl, String longUrl) {
@@ -128,7 +128,7 @@ public class URLMapperService {
         else {
             shortUrl = urlMapperEntity.getUrlKey();
             LocalDate currentDate = LocalDate.now();
-            if (currentDate.compareTo(urlMapperEntity.getEffectiveStartDate()) >=0 && currentDate.compareTo(urlMapperEntity.getEffectiveEndDate())<=0)
+            if (currentDate.compareTo(urlMapperEntity.getEffectiveStartDate()) >= 0 && currentDate.compareTo(urlMapperEntity.getEffectiveEndDate()) <= 0)
                 urlMap.put(shortUrl, MapperConstants.NO_ACTION_MODE);
             else
                 urlMap.put(shortUrl, MapperConstants.UPDATE_MODE);
@@ -147,10 +147,26 @@ public class URLMapperService {
         if (null != longUrl && !StringUtils.EMPTY.equals(longUrl)) {
             LocalDate effectiveEndDate = (null != urlMapperEntity.getEffectiveEndDate() ? urlMapperEntity.getEffectiveEndDate() : null);
             ChronoLocalDate today = LocalDate.now();
-            if (effectiveEndDate.isBefore(today))
+            if (effectiveEndDate.compareTo(today) < 0)
                 throw new URLExpiredException(ErrorCodeEnum.EXPURL.name());
         }
         return longUrl;
+
+    }
+
+    @CacheEvict(value = "mapperEntity", key = "#longUrl")
+    public void evictUrlCache() {
+        log.info("longUrl evict");
+    }
+
+    @CacheEvict(value = "mapperEntity", key = "#urlKey")
+    public void evictKeyCache() {
+        log.info("key evict");
+    }
+
+    public void evictCache() {
+        evictKeyCache();
+        evictUrlCache();
 
     }
 }
