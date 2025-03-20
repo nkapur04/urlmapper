@@ -3,6 +3,7 @@ package com.sample.url.utility.mapper.controller;
 import com.sample.url.utility.mapper.config.AppProperty;
 import com.sample.url.utility.mapper.dto.ResponseDTO;
 import com.sample.url.utility.mapper.service.URLMapperService;
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -27,6 +28,7 @@ public class URLMapperController {
     }
 
     @PostMapping("/shorten")
+    @Timed(value = "shortenURL", description = "Time taken to shorten the URL")
     public ResponseEntity<ResponseDTO> shortenURL(@RequestBody String url) {
         log.debug("shortUrl Start time: " + LocalDateTime.now());
         ResponseDTO responseDTO = urlMapperService.shortenURL(url);
