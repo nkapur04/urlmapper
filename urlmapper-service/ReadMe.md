@@ -53,12 +53,37 @@ The `URLMapperController` class provides the following endpoints:
     - **Method**: `POST`
     - **Request Body**: The URL to be shortened.
     - **Response**: A `ResponseDTO` containing the shortened URL.
+    - **HTTP Status Code** : 200 OK (positive scenario).
+ ResponseDTO will contain details of Error HttpStatus code and detailed error message.
+
+| Exception             | Error Code | Error Message                                                   |
+|-----------------------|------------|-----------------------------------------------------------------|
+| SyntaxURLException    | 400        | The input URL to be shortened is malformed                      |
+| InvalidURLException   | 400        | The input URL to be shortened is either not valid or not reachable |
+| DataBaseException     | 500        | Some DB Exception has occurred                                  |
+| URLExpiredException   | 404        | The shortened URL has expired in the system. Please try to generate again. |
+
+#Shorten URL Design:
+ - **1.**:Validates the provided URL using the URLValidator and also check if it is not malformed.
+ - **2.**:If the URL is valid from above step, it pings the URL to check its availability.
+ - **3.**:Fetches existing URL details from the database.
+ - **4.**:Depending on the action mode (NO_ACTION_MODE, SAVE_MODE, UPDATE_MODE), it:
+   - **a.**:Returns the existing short URL(when URL exists within current date time range - NO_ACTION_MODE).
+   - **b.**:Generates a new short URL, checks for its existence in the database, and persists it. (when URL doesn't exist in DB - SAVE_MODE)
+   - **c.**:Updates the existing short URL record with dates in the database(when URL exists, but not in current time range - UPDATE_MODE)
+ - **5.**:If the URL is invalid, it throws an InvalidURLException.
+ - **6.**:Duplicate URL handling scenarios:
+   - Duplicate Long URL Scenario 1- if the same long URL exists in system and it is effective within current date, then respective short url(already stored in DB) will be returned.
+   - Duplicate Long URL Scenario 2 - if the same long URL exists in system and it is effective within current date, then effective end date will be updated as high date in DB for the existing record.
+   - Duplicate Short URL - After shortening a long URL, there is an additional check(recursive function) to check if the short URL already exists in DB.
+
 
 - **Redirect to Long URL**: Redirect to the original long URL using the shortened URL.
     - **Endpoint**: `/{shortUrl}`
     - **Method**: `GET`
     - **Path Variable**: `shortUrl` - The shortened URL.
-    - **Response**: Redirects to the original long URL if found, otherwise returns `404 Not Found`.
+    - **Response**: Redirects to the original long URL if found.
+    - **HTTP Status Code** : 302 Found (if redirection is successful) or 404 Not Found (if the short URL is not found)
 
 ## Configuration/Features
 
